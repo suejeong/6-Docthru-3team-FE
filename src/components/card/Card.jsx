@@ -8,7 +8,7 @@ import { typeChipMap, categoryChipMap } from "../chip/chipMaps";
 import ChipCardStatus from "@/components/chip/chipComplete/ChipCardStatus";
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import DeclineModal from "@/components/modal/DeclineModal";
+import DeclineModal from "../modal/DeclineModal";
 import { deleteChallengeAction } from "@/lib/actions/challenge";
 
 export default function ChallengeCard({
