@@ -6,6 +6,12 @@ import Image from "next/image";
 import Reply from "@/components/reply/Reply";
 import TextBox from "@/components/reply/TextBox";
 import { useParams } from "next/navigation";
+import {
+  getFeedbacksAction,
+  createFeedbackAction,
+  updateFeedbackAction,
+  deleteFeedbackAction
+} from "@/lib/actions/feedback";
 
 export default function FeedbackBox() {
   const [feedback, setFeedback] = useState("");
@@ -13,26 +19,26 @@ export default function FeedbackBox() {
   const [displayedFeedbacks, setDisplayedFeedbacks] = useState([]); // 화면에 보여줄 피드백
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const params = useParams();
   const workId = params.workId;
 
   // 피드백 목록 전체 불러오기
   const fetchFeedbackList = async () => {
+    setIsLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/works/${workId}/feedbacks`, {
-        credentials: "include"
-      });
-      if (!res.ok) throw new Error("데이터 불러오기 실패");
-      const data = await res.json();
+      const data = await getFeedbacksAction(workId);
       setAllFeedbacks(data || []);
-      setHasMore(data.length > 0); // 초기에는 항상 true
+      setHasMore(data.length > 0);
       // 처음엔 3개만 보여줌
       setDisplayedFeedbacks(data.slice(0, 3));
       setOffset(3);
     } catch (error) {
-      console.error("피드백 불러오기 실패:", error);
+      console.error("피드백 불러오기 실패:", error.message);
       setAllFeedbacks([]);
       setDisplayedFeedbacks([]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -54,55 +60,42 @@ export default function FeedbackBox() {
     if (!feedback.trim()) return;
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/works/${workId}/feedbacks`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: feedback })
-      });
-      if (res.ok) {
-        // 피드백 등록 시 목록 갱신
-        setFeedback("");
-        fetchFeedbackList();
-      }
+      await createFeedbackAction(workId, feedback);
+      setFeedback("");
+      await fetchFeedbackList(); // 목록 갱신
     } catch (error) {
-      console.error("피드백 등록 실패:", error);
+      console.error("피드백 등록 실패:", error.message);
     }
   };
 
   // 피드백 수정
   const onEdit = async (feedbackId, editedContent) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/works/${workId}/feedbacks/${feedbackId}`, {
-        method: "PATCH",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: editedContent })
-      });
-      if (res.ok) {
-        // 피드백 수정 시 목록 갱신
-        fetchFeedbackList();
-      }
+      await updateFeedbackAction(workId, feedbackId, editedContent);
+      await fetchFeedbackList(); // 목록 갱신
     } catch (error) {
-      console.error("Error editing feedback:", error);
+      console.error("피드백 수정 실패:", error.message);
     }
   };
 
   // 피드백 삭제
   const onDelete = async (feedbackId) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/works/${workId}/feedbacks/${feedbackId}`, {
-        method: "DELETE",
-        credentials: "include"
-      });
-      if (res.ok) {
-        // 피드백 삭제 시 목록 갱신
-        fetchFeedbackList();
-      }
+      await deleteFeedbackAction(workId, feedbackId);
+      await fetchFeedbackList(); // 목록 갱신
     } catch (error) {
-      console.error("Error deleting feedback:", error);
+      console.error("피드백 삭제 실패:", error.message);
     }
   };
+
+  // 로딩 UI
+  if (isLoading) {
+    return (
+      <div className="flex h-40 items-center justify-center">
+        <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -129,8 +122,8 @@ export default function FeedbackBox() {
         />
       ))}
       {hasMore && allFeedbacks.length > 3 && (
-        <div className="flex justify-center mt-2">
-          <button onClick={handleLoadMore} className="w-45 text-center py-2 bg-gray-100 rounded-xl hover:bg-gray-50">
+        <div className="mt-2 flex justify-center">
+          <button onClick={handleLoadMore} className="w-45 rounded-xl bg-gray-100 py-2 text-center hover:bg-gray-50">
             더보기
           </button>
         </div>

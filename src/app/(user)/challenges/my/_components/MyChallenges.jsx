@@ -4,6 +4,7 @@ import React, { useCallback, useEffect } from "react";
 import SearchInput from "@/components/input/SearchInput";
 import ChallengeCard from "@/components/card/Card";
 import useChallenges from "@/hooks/useChallengeList";
+
 export default function Mychallenges({myChallengeStatus}) {
   console.log("🧩 Mychallenges 컴포넌트 렌더", myChallengeStatus);
   
@@ -19,6 +20,7 @@ export default function Mychallenges({myChallengeStatus}) {
     setKeyword,
   } = useChallenges(myChallengeStatus);
 
+
   const handleScroll = useCallback(() => {
     if (
       window.innerHeight + window.scrollY >=
@@ -30,21 +32,19 @@ export default function Mychallenges({myChallengeStatus}) {
     }
   }, [isLoading, challenges.length, totalCount, setPage]);
 
-   useEffect(() => {
+  useEffect(() => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
 
   return (
     <>
-      <SearchInput
-            text={"text-[14px]"}
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-          />
+      <SearchInput text={"text-[14px]"} value={keyword} onChange={(e) => setKeyword(e.target.value)} />
       <div className="flex flex-col gap-[24px] py-[24px]">
         {isLoading ? (
-          <div className="text-sm w-full h-full flex items-center justify-center text-gray-500">챌린지 목록을 불러오는 중...</div>
+          <div className="flex h-full w-full items-center justify-center text-sm text-gray-500">
+            챌린지 목록을 불러오는 중...
+          </div>
         ) : error ? (
           <div className="text-red-500">{error}</div>
         ) : challenges.length > 0 ? (
@@ -60,7 +60,9 @@ export default function Mychallenges({myChallengeStatus}) {
             />
           ))
         ) : (
-          <div className="text-sm w-full h-full flex items-center justify-center text-gray-500">챌린지가 존재하지 않습니다.</div>
+          <div className="flex h-full w-full items-center justify-center text-sm text-gray-500">
+            챌린지가 존재하지 않습니다.
+          </div>
         )}
       </div>
 
@@ -70,7 +72,6 @@ export default function Mychallenges({myChallengeStatus}) {
         pageSize={pageSize}
         onPageChange={(newPage) => setPage(newPage)}
       /> */}
-
-    </>  
+    </>
   );
 }

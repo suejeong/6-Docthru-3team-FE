@@ -7,74 +7,67 @@ import activeHeart from "@/assets/icon/ic_active_heart.svg";
 import profile from "@/assets/img/profile_member.svg";
 import adminProfile from "@/assets/img/profile_admin.svg";
 import empty from "@/assets/img/empty.svg";
-import { useAuth } from "@/providers/AuthProvider";
+import { getWorkDetailAction, createWorkLikeAction, deleteWorkLikeAction } from "@/lib/actions/work";
 
 export default function Content() {
-  const params = useParams();
-  const workId = params.workId;
+  const { challengeId, workId } = useParams();
   const [work, setWork] = useState(null);
-  const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
 
+  // 작업물 조회
   const fetchWork = async () => {
+    setIsLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/works/${workId}`, {
-        credentials: "include"
-      });
-      if (!res.ok) throw new Error("작업 불러오기 실패");
-      const { data } = await res.json();
-      setWork(data);
+      const result = await getWorkDetailAction(challengeId, workId);
+      if (result?.data) {
+        setWork(result.data);
+      } else {
+        throw new Error("작업물 정보를 불러오지 못했습니다.");
+      }
     } catch (error) {
       console.error(error);
+      alert(error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    if (!workId) return;
-    fetchWork();
-  }, [workId]);
-
-  const handleLikeClick = async () => {
+  // 좋아요 토글 핸들러
+  const handleLikeToggle = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/works/${workId}/like`, {
-        method: "POST",
-        credentials: "include"
-      });
-      if (res.ok) {
-        await fetchWork();
+      if (work?.isLiked) {
+        await deleteWorkLikeAction(workId);
       } else {
-        const error = await res.json();
-        alert(error.message || "좋아요에 실패했습니다.");
+        await createWorkLikeAction(workId);
       }
+      await fetchWork(); // 상태 갱신
     } catch (error) {
-      console.error("좋아요 에러:", error);
-      alert("좋아요 중 오류가 발생했습니다.");
+      console.error("좋아요 처리 실패:", error);
+      alert(error.message || "좋아요 처리 중 오류가 발생했습니다.");
     }
   };
 
-  const handleUnlikeClick = async () => {
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/works/${workId}/like`, {
-        method: "DELETE",
-        credentials: "include"
-      });
-
-      if (res.ok) {
-        await fetchWork();
-      } else {
-        const error = await res.json();
-        alert(error.message || "좋아요 취소 실패");
-      }
-    } catch (error) {
-      console.error("좋아요 취소 에러:", error);
-      alert("좋아요 취소 중 오류가 발생했습니다.");
-    }
-  };
-
+  // 날짜 포맷팅
   const formatDate = (dateString) => {
     if (!dateString) return "";
     const date = new Date(dateString);
-    return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`;
+    return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(
+      2,
+      "0"
+    )}`;
   };
+
+  useEffect(() => {
+    if (workId) fetchWork();
+  }, [workId]);
+
+  if (isLoading) {
+    return (
+      <div className="flex h-40 items-center justify-center">
+        <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -90,15 +83,14 @@ export default function Content() {
             <div className="text-xs font-medium text-gray-800">{work?.author?.authorNickname || "닉네임"}</div>
           </div>
           <div className="flex items-center gap-1 text-sm font-medium text-gray-500">
-            {work?.isLiked ? (
-              <button onClick={handleUnlikeClick}>
-                <Image src={activeHeart} width={16} height={16} alt="active_heart" />
-              </button>
-            ) : (
-              <button onClick={handleLikeClick}>
-                <Image src={inactiveHeart} width={16} height={16} alt="inactive_heart" />
-              </button>
-            )}
+            <button onClick={handleLikeToggle}>
+              <Image
+                src={work?.isLiked ? activeHeart : inactiveHeart}
+                width={16}
+                height={16}
+                alt={work?.isLiked ? "active_heart" : "inactive_heart"}
+              />
+            </button>
             {work?.likeCount || 0}
           </div>
         </div>
@@ -106,7 +98,7 @@ export default function Content() {
       </div>
       <div className="mb-6 border-b border-gray-200 pb-10">
         {work?.content || (
-          <div className="text-base text-gray-900 flex flex-col justify-center items-center py-30 gap-4 ">
+          <div className="flex flex-col items-center justify-center gap-4 py-30 text-base text-gray-900">
             <Image src={empty} width={320} height={168} alt="empty" />
             아직 아무런 번역을 진행하지 않았어요!
           </div>

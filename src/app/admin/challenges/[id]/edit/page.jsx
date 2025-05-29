@@ -8,7 +8,6 @@ import CategoryItems from "@/components/dropDown/category/CategoryItems";
 import { useParams, useRouter } from "next/navigation";
 import { updateChallenge } from "@/lib/api/challenge-api/editChallenge";
 import { getChallengeDetail } from "@/lib/api/challengeDetail";
-import { getUserAction } from "@/lib/actions/user";
 
 export default function editChallengePageAdmin() {
   const [title, setTitle] = useState("");

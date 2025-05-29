@@ -4,7 +4,7 @@ export function middleware(request) {
   const { pathname } = request.nextUrl;
 
   // refreshToken 기반 인증 여부 판단 (httpOnly 쿠키는 JS에서는 못 보지만 서버에서는 접근 가능)
-  const refreshToken = request.cookies.get("refreshToken")?.value;
+  const refreshToken = request.cookies.get("accessToken")?.value;
   const isAuthenticated = !!refreshToken;
 
   // 로그인/회원가입 경로 여부 (인증 상태에 따라 접근 차단 목적)

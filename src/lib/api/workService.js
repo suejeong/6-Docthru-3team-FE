@@ -75,7 +75,10 @@ const workService = {
       method: "DELETE"
     });
     if (!response.ok) throw new Error("Failed to delete work like");
-    return response.json();
+    if (response.status !== 204) {
+      return response.json();
+    }
+    return { status: response.status };
   }
 };
 

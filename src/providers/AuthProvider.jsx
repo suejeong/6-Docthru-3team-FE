@@ -1,10 +1,9 @@
 "use client";
 
-import { loginAction, registerAction } from "@/lib/actions/auth";
+import { getRefreshToken, loginAction, logoutAction, registerAction } from "@/lib/actions/auth";
 import { userService } from "@/lib/service/userService";
 import { createContext, useContext, useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { authService } from "@/lib/service/authService";
 
 const AuthContext = createContext({
   login: () => {},
@@ -48,7 +47,6 @@ export default function AuthProvider({ children }) {
         console.log(userData);
         return userData;
       }
-      console.log("회원가입 성공:", userData);
       return userData;
     } catch (error) {
       console.error("회원가입 실패:", error.message);
@@ -62,12 +60,28 @@ export default function AuthProvider({ children }) {
     setIsLoading(true);
     try {
       const userData = await loginAction(email, password);
-      console.log("loginAction 결과 (서버 응답 확인):", userData);
 
       if (userData?.error) {
         throw new Error(userData.message || "로그인에 실패했습니다.");
       }
-      getUser();
+
+      // 토큰 갱신 로직을 주기적으로 실행
+      // JWT 슬라이딩 세션 트리거 파트
+      const refreshTokenInterval = setInterval(
+        async () => {
+          await getRefreshToken();
+          clearInterval(refreshTokenInterval);
+          await logout();
+        },
+
+        // 14분마다 갱신 (서버 만료 시간인 15분보다 1분 짧게 설정함)
+        // TODO : 추후 마무리 배포시 14분 주석 해제
+        // 14 * 60 * 1000
+        // test 코드 현재는 1분마다 갱신함
+        14 * 60 * 1000
+      );
+
+      await getUser();
       router.push("/challenges");
     } catch (error) {
       console.error("로그인 실패:", error.message);
@@ -79,9 +93,15 @@ export default function AuthProvider({ children }) {
   };
 
   const logout = async () => {
-    await authService.logout();
-    setUser(null);
-    router.push("/signIn");
+    try {
+      await logoutAction();
+      setUser(null);
+      router.push("/signIn");
+    } catch (error) {
+      console.error("로그아웃 실패:", error.message);
+      setUser(null);
+      throw error;
+    }
   };
 
   useEffect(() => {

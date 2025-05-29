@@ -19,6 +19,7 @@ export default function ChallengeCard({
   deadline,
   participants,
   maxParticipant,
+  // status,
   variant = "default",
   isAdmin,
   onClick
@@ -88,6 +89,9 @@ export default function ChallengeCard({
       alert("챌린지 삭제에 실패했습니다: " + error.message);
     }
   };
+
+  //디버깅
+  console.log("status", status);
 
   return (
     <div

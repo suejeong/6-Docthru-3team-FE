@@ -18,14 +18,19 @@ export async function getServerSideToken(cookieName) {
 
 export async function loginAction(email, password) {
   try {
-    const res = await fetch(`${BASE_URL}/auth/sign-in`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ email, password }),
-      cache: "no-store"
-    });
+    const res = await fetch(
+      `${BASE_URL}/auth/sign-in`,
+      // const res = await fetch(`http://localhost:8080/auth/sign-in`,
+
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, password }),
+        cache: "no-store"
+      }
+    );
 
     if (!res.ok) {
       const data = await res.json();
@@ -41,9 +46,9 @@ export async function loginAction(email, password) {
       console.log("Backend Set-Cookie header received in loginAction:", setCookieHeader);
 
       const cookieParts = setCookieHeader.split(", ").flatMap((part) => part.split(","));
-      const cookieStore = cookies();
+      const cookieStore = await cookies();
 
-      cookieParts.forEach((cookieString) => {
+      const cookiePromises = cookieParts.map(async (cookieString) => {
         const [nameValuePair, ...attributes] = cookieString.split(";").map((s) => s.trim());
         const [name, value] = nameValuePair.split("=");
 
@@ -66,10 +71,12 @@ export async function loginAction(email, password) {
         });
 
         if (name && value) {
-          cookieStore.set(name, value, cookieOptions);
+          await cookieStore.set(name, value, cookieOptions);
           console.log(`[loginAction] Set server cookie: ${name}`);
         }
       });
+
+      await Promise.all(cookiePromises);
     } else {
       console.warn("No Set-Cookie header received from backend for login.");
     }
@@ -103,38 +110,123 @@ export async function registerAction(email, nickname, password, passwordConfirma
 }
 
 export async function logoutAction() {
+  // 클라이언트 측 쿠키도 함께 삭제 (백업용)
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get("accessToken")?.value;
+
+  cookieStore.delete("accessToken");
+  cookieStore.delete("refreshToken");
+
   try {
-    const cookieStore = cookies();
-    cookieStore.delete("accessToken");
-    cookieStore.delete("refreshToken");
-    return { success: true };
+    // 백엔드 로그아웃 API 호출
+    // TODO : 추후 마무리 배포시 주석 해제
+    const response = await fetch(
+      `${BASE_URL}/auth/sign-out`,
+      // const response = await fetch(`http://localhost:8080/auth/sign-out`,
+
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: `accessToken=${accessToken}`
+        }
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "로그아웃 실패");
+    }
+
+    const data = await response.json();
+
+    return {
+      success: true,
+      message: data.message || "성공적으로 로그아웃되었습니다."
+    };
   } catch (error) {
-    return { error: true, message: error.message };
+    console.error("Logout error:", error);
+    return {
+      success: false,
+      error: true,
+      message: error.message || "로그아웃 중 오류가 발생했습니다."
+    };
   }
 }
 
-// 401 에러 발생 시 토큰 자동 갱신(TODO: 수정필요)
-export async function getUserWithAutoRefresh() {
-  const tryFetch = async () =>
-    await fetch(`${BASE_URL}/users/me`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      cache: "no-store"
-    });
+export async function getRefreshToken() {
+  const cookieStore = await cookies();
+  const refreshToken = cookieStore.get("refreshToken")?.value;
 
-  const res = await tryFetch();
-  if (res.ok) return await res.json();
-  if (res.status === 401) {
-    const refreshRes = await fetch(`${BASE_URL}/auth/refresh`, {
-      method: "POST",
-      credentials: "include",
-      cache: "no-store"
-    });
-    if (!refreshRes.ok) throw new Error("리프레시 토큰 만료됨");
-    const retry = await tryFetch();
-    if (!retry.ok) throw new Error("토큰 갱신 후 재요청 실패");
-    return await retry.json();
+  if (!refreshToken) {
+    console.log("[getRefreshToken] No refresh token found");
+    throw new Error("리프레시 토큰 만료됨!");
   }
-  throw new Error("유저 정보 조회 실패");
+
+  try {
+    // TODO : 추후 테스트 성공시 주석 해제
+    const response = await fetch(
+      `${BASE_URL}/auth/refresh-token`,
+      // const response = await fetch(`http://localhost:8080/auth/refresh-token`,
+
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: `refreshToken=${refreshToken}`
+        },
+        cache: "no-store"
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("[getRefreshToken] Error response:", data);
+      throw new Error(data.message || "토큰 갱신 실패");
+    }
+
+    const setCookieHeader = response.headers.get("Set-Cookie");
+
+    if (setCookieHeader) {
+      const cookieParts = setCookieHeader.split(", ").flatMap((part) => part.split(","));
+
+      const cookiePromises = cookieParts.map(async (cookieString) => {
+        const [nameValuePair, ...attributes] = cookieString.split(";").map((s) => s.trim());
+        const [name, value] = nameValuePair.split("=");
+
+        const cookieOptions = {};
+        attributes.forEach((attr) => {
+          const lowerAttr = attr.toLowerCase();
+          if (lowerAttr.startsWith("max-age")) {
+            cookieOptions.maxAge = parseInt(attr.split("=")[1], 10);
+          } else if (lowerAttr.startsWith("path")) {
+            cookieOptions.path = attr.split("=")[1];
+          } else if (lowerAttr.startsWith("expires")) {
+            cookieOptions.expires = new Date(attr.split("=")[1]);
+          } else if (lowerAttr === "httponly") {
+            cookieOptions.httpOnly = true;
+          } else if (lowerAttr.startsWith("samesite")) {
+            cookieOptions.sameSite = attr.split("=")[1];
+          } else if (lowerAttr === "secure") {
+            cookieOptions.secure = true;
+          }
+        });
+
+        if (name && value) {
+          await cookieStore.set(name, value, cookieOptions);
+          console.log(`[getRefreshToken] Set ${name} cookie with options:`, cookieOptions);
+        }
+      });
+
+      await Promise.all(cookiePromises);
+    } else {
+      console.warn("[getRefreshToken] No Set-Cookie header received");
+    }
+
+    return data;
+  } catch (e) {
+    console.error("[getRefreshToken] Error:", e);
+    throw new Error("리프레시 토큰 재발급 실패!");
+  }
 }

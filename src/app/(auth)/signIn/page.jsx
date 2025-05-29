@@ -29,8 +29,8 @@ export default function SignInPage() {
   // 임시 로딩 UI
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="flex h-screen items-center justify-center">
+        <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-blue-500"></div>
         <p className="ml-4">인증 정보를 확인 중입니다...</p>
       </div>
     );
@@ -56,7 +56,7 @@ export default function SignInPage() {
           <SubmitButton type="로그인" hasInputValue={true} />
         </form>
         <GoogleLoginButton />
-        <div className="text-[#262626] mt-6 space-x-2">
+        <div className="mt-6 space-x-2 text-[#262626]">
           <span className="text-base">회원이 아니신가요? </span>
           <Link href="/signUp">
             <span className="text-base underline">회원가입하기</span>

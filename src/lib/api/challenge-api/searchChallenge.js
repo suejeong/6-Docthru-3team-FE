@@ -1,8 +1,7 @@
-
 "use server";
 
-import { API_URL } from '@/constant/constant';
-import { cookies } from 'next/headers';
+import { API_URL } from "@/constant/constant";
+import { cookies } from "next/headers";
 
 // accessToken을 안전하게 추출
 const getAccessToken = async () => {
@@ -21,15 +20,13 @@ const getAuthHeaders = async () => {
 };
 
 // 챌린지 목록 가져오기
-export async function getChallenges({
-  page = 1,
-  pageSize = 4,
-  category,
-  docType,
-  keyword,
-  myChallengeStatus
-}) {
+
+export async function getChallenges({ page = 1, pageSize = 4, category, docType, keyword, status, myChallengeStatus }) {
+
   const headers = await getAuthHeaders();
+
+  //디버깅
+  console.log("status", status);
 
   const params = new URLSearchParams();
   params.set("page", page);
@@ -41,6 +38,15 @@ export async function getChallenges({
     const cleanedKeyword = keyword.replace(/\s+/g, "");
     params.set("keyword", cleanedKeyword);
   }
+  if (status) params.set("status", status);
+  //   if (status) {
+  //   if (Array.isArray(status)) {
+  //     status.forEach((s) => params.append("status", s));
+  //   } else {
+  //     params.set("status", status);
+  //   }
+  // }
+
 
   const isMyChallenge = typeof myChallengeStatus === "string" && myChallengeStatus.trim() !== "";
 
@@ -50,6 +56,7 @@ export async function getChallenges({
     params.set("myChallengeStatus", myChallengeStatus);
   }
 
+
   const url = `${API_URL}${path}?${params.toString()}`;
 
   try {
@@ -58,6 +65,10 @@ export async function getChallenges({
       headers,
       credentials: "include"
     });
+
+    console.log("📡 요청 URL:", url);
+    console.log("📡 요청 Headers:", headers);
+    console.log("📡 응답 Status:", res.status);
 
     if (!res.ok) throw new Error("챌린지 목록을 가져올 수 없습니다.");
 
@@ -69,15 +80,15 @@ export async function getChallenges({
       return { data: [], totalCount: 0 };
     }
 
+    console.log("📦 응답 데이터:", json); 
 
     return {
       data: Array.isArray(json?.data) ? json.data : [],
       totalCount: typeof json?.totalCount === "number" ? json.totalCount : 0
     };
   } catch (error) {
-    console.error("🚨 서버 액션 - 챌린지 목록 오류", error);
+    console.error("서버 액션 - 챌린지 목록 오류", error);
     throw error;
   }
 }
-
 

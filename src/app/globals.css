@@ -35,12 +35,23 @@
 
   /* ✅ Tailwind Breakpoint 대응 Container Size */
 
-  --container-sm: 375px;
+  /* max-w-[var(--container-xl)] 해당 형태로 사용하시면 됩니다 */
+  /* min-w-[var(--container-xl)] 해당 형태로 사용하시면 됩니다 */
+
   /* 모바일 */
-  --container-md: 744px;
+  --container-sm: 375px;
+
   /* 태블릿 (iPad Mini) */
-  --container-xl: 1200px;
+  --container-md: 744px;
+
+  /* 챌린지조회 외 페이지 기준 크기 */
+  --container-challenge-other: 890px;
+
+  /* 챌린지 조회 페이지 기준 크기 */
+  --container-challenge: 996px;
+
   /* 데스크탑 */
+  --container-xl: 1200px;
 }
 
 @layer components {
