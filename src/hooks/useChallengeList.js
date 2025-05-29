@@ -51,7 +51,7 @@ const useChallenges = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [page, pageSize, keyword, filters]);
+  }, [page, pageSize, keyword, filters.categories, filters.docType, filters.status]);
 
   useEffect(() => {
       getChallengesData();
