@@ -40,7 +40,7 @@ export const metadata = {
     siteName: "Docthur",
     images: [
       {
-        url: "/og-image.avif",
+        url: "/og-image.webp",
         width: 736,
         height: 368,
         alt: "Docthur 서비스 소개 이미지"
@@ -53,7 +53,7 @@ export const metadata = {
     card: "summary_large_image",
     title: "Docthur - 개발문서 번역 플랫폼",
     description: "전 세계 개발 문서를 한국어로 쉽게 이해하세요.",
-    images: ["/og-image.avif"]
+    images: ["/og-image.webp"]
   },
   metadataBase: new URL("https://6-docthru-3team-fe-dev.vercel.app/")
 };
