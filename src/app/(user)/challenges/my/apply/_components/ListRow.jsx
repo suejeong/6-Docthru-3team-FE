@@ -11,13 +11,13 @@ export default function ListRow({ data }) {
         <div
           key={key}
           style={{ flex }}
-          className={`${className} flex items-center px-1 text-left text-[13px] font-normal whitespace-normal text-gray-500`}
+          className={`${className ?? ""} flex items-center px-1 text-left text-[13px] font-normal whitespace-normal text-gray-500`}
         >
           {render
             ? render(challenge, rest)
             : key === "createdAt" || key === "deadline"
               ? formatDate(challenge[key])
-              : challenge[key]}
+              : (challenge?.[key] ?? "-")}
         </div>
       ))}
     </button>

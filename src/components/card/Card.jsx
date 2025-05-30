@@ -43,18 +43,20 @@ export default function ChallengeCard({
     }
   }, [deadline, maxParticipant, participants]);
 
-  // 외부 클릭 시 드롭다운 닫기
+  // 외부 클릭 시 드롭다운 닫기 로직
   useEffect(() => {
-    function handleClickOutside(event) {
+    const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsDropdownOpen(false);
       }
+    };
+    if (isDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
     }
-    document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [dropdownRef]);
+  }, [isDropdownOpen]);
 
   const formatDateToPretty = (dateString) => {
     const date = new Date(dateString);
@@ -75,10 +77,6 @@ export default function ChallengeCard({
     setIsDropdownOpen(false);
   };
 
-  const handleCloseDeclineModal = () => {
-    setIsDeclineModalOpen(false);
-  };
-
   const handleConfirmDelete = async (adminMessage) => {
     try {
       await deleteChallengeAction(challengeId, adminMessage);
@@ -89,9 +87,6 @@ export default function ChallengeCard({
       alert("챌린지 삭제에 실패했습니다: " + error.message);
     }
   };
-
-  //디버깅
-  console.log("status", status);
 
   return (
     <div
@@ -162,7 +157,9 @@ export default function ChallengeCard({
         </>
       )}
       {isDeclineModalOpen && (
-        <DeclineModal text="삭제" onClose={handleCloseDeclineModal} onConfirm={handleConfirmDelete} />
+        <DeclineModal text="삭제" onClose={() => {
+          setIsDeclineModalOpen(false)
+        }} onConfirm={handleConfirmDelete} />
       )}
     </div>
   );

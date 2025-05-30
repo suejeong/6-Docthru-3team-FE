@@ -20,12 +20,10 @@ export default function page() {
   const { modalState, updateModalState } = useModalControl();
   const { content, setContent, isSubmitted, workMeta, handleUpdateWork, handleDeleteWork } = useWorkData(
     challengeId,
+    workId,
     updateModalState
   );
-  const { draftState, updateDraftState, toggleDraftModal, saveDraft, loadDraft } = useDraft(
-    workMeta.workId,
-    setContent
-  );
+  const { draftState, updateDraftState, toggleDraftModal, saveDraft, loadDraft } = useDraft(workId, setContent);
 
   return (
     <div className="relative">

@@ -1,63 +1,74 @@
 "use client";
 
-import SearchInput from "@/components/input/SearchInput";
 import AppliedChallenges from "./_components/AppliedChallenges";
-import Sort from "@/components/sort/Sort";
-import useChallenges from "@/hooks/useChallengeList";
-import { useParams, useRouter } from "next/navigation";
-import React, { useState } from "react";
-import { useAuth } from "@/providers/AuthProvider";
 import ApplyDropdown from "@/components/dropDown/list/ApplyDropdown";
+import SearchInput from "@/components/input/SearchInput";
+import Sort from "@/components/sort/Sort";
+import { ITEM_COUNT } from "@/constant/constant";
+import React, { useEffect, useState } from "react";
+import { useAuth } from "@/providers/AuthProvider";
+import { userService } from "@/lib/service/userService";
 
-export default function ApplicationsPage() {
+export default function MyApplicationsPage() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  // const [applications, setApplications] = useState();
-  const { user, loading } = useAuth();
-  const router = useRouter();
-  const { userId } = useParams();
+  const [applications, setApplications] = useState();
+  const [totalCount, setTotalCount] = useState(null);
+  const [page, setPage] = useState(1);
+  const [selectedSortLabel, setSelectedSortLabel] = useState("신청 시간 느린순");
+  const [sort, setSort] = useState(null);
+  const [keyword, setKeyword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const pageSize = ITEM_COUNT.APPLICATION;
 
-  if (loading) return <div>로딩 중...</div>;
+  const { user } = useAuth();
 
-  if (!user || user.Id !== userId) {
-    return <div>접근 권한이 없습니다.</div>;
-  }
+  const fetchApplications = async () => {
+    try {
+      setLoading(true);
+      const { totalCount, applications } = await userService.getMyApplications(page, pageSize, sort, keyword, user?.id);
+      setApplications(applications);
+      setTotalCount(totalCount);
+    } catch (err) {
+      console.error("신청 목록 조회 실패:", err.message);
+      alert(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const myChallengeStatus = "applied";
+  useEffect(() => {
+    fetchApplications();
+  }, [page, sort, keyword]);
 
-  const { challenges, totalCount, page, pageSize, keyword, isLoading, error, setPage, setKeyword } =
-    useChallenges(myChallengeStatus);
+  const handleSortSelect = ({ label, value }) => {
+    setSelectedSortLabel(label);
+    setSort(value);
+    setIsDropdownOpen(false);
+    setPage(1);
+  };
 
-  console.log(challenges);
   return (
     <>
       <div className="mb-4 flex justify-between gap-2">
         <div className="flex-7 sm:flex-8">
-          {" "}
-          <SearchInput text={"text-[14px]"} value={keyword} onChange={(e) => setKeyword(e.target.value)} />
+          <SearchInput value={keyword} onChange={(e) => setKeyword(e.target.value)} />
         </div>
         <div className="relative flex-3 sm:flex-2">
-          <Sort isAdminStatus={true} onClick={() => setIsDropdownOpen((prev) => !prev)} />
-          <div className="absolute right-0 mt-2">{isDropdownOpen && <ApplyDropdown />}</div>
+          <Sort isAdminStatus={true} onClick={() => setIsDropdownOpen((prev) => !prev)} label={selectedSortLabel} />
+          <div className="absolute right-0 mt-2">{isDropdownOpen && <ApplyDropdown onSelect={handleSortSelect} />}</div>
         </div>
       </div>
-      {isLoading ? (
-        <div className="flex h-full w-full items-center justify-center text-sm text-gray-500">
-          챌린지 목록을 불러오는 중...
-        </div>
-      ) : error ? (
-        <div className="text-red-500">{error}</div>
-      ) : challenges.length > 0 ? (
+      {!loading && applications?.length > 0 ? (
         <AppliedChallenges
-          resultData={challenges}
-          onClick={(id) => router.push(`/challenges/${id}`)}
+          resultData={applications}
           totalCount={totalCount}
           page={page}
           pageSize={pageSize}
           onPageChange={(newPage) => setPage(newPage)}
         />
       ) : (
-        <div className="flex h-full w-full items-center justify-center text-sm text-gray-500">
-          챌린지가 존재하지 않습니다.
+        <div className="mt-[15rem] flex w-full items-center justify-center text-sm text-gray-500">
+          아직 챌린지가 없어요.
         </div>
       )}
     </>

@@ -20,7 +20,7 @@ const workService = {
   },
 
   // 작업물 상세 조회
-  getWorkDetail: async (challengeId = 15, workId = 67) => {
+  getWorkDetail: async (challengeId, workId) => {
     const response = await fetch(`${BASE_URL}/challenges/${challengeId}/works/${workId}`, { ...fetchConfig });
     if (!response.ok) throw new Error("Failed to fetch work detail");
     return response.json();

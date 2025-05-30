@@ -8,7 +8,7 @@ import OriginalUrlSection from "./_components/OriginalUrlSection";
 import ChallengeSection from "./_components/ChallengeSection";
 import { userService } from "@/lib/service/userService";
 
-export default function ApplicationDetailPage() {
+export default function MyApplicationDetailPage() {
   const { id } = useParams();
   const [application, setApplication] = useState();
   const [challenge, setChallenge] = useState();
@@ -33,7 +33,7 @@ export default function ApplicationDetailPage() {
     <div>
       <StatusSection application={application} />
       <LineDivider />
-      <ChallengeSection challenge={challenge} />
+      <ChallengeSection challenge={challenge} adminStatus={application?.adminStatus} />
       <LineDivider />
       <OriginalUrlSection originalPageUrl={challenge?.originalUrl} />
     </div>

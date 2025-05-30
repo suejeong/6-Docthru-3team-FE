@@ -1,6 +1,5 @@
 "use client";
 
-import { useParams } from "next/navigation";
 import Mychallenges from "./_components/MyChallenges";
 import { useAuth } from "@/providers/AuthProvider";
 

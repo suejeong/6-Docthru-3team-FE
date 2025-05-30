@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { deleteWorkAction, getWorkDetailAction, updateWorkAction } from "@/lib/actions/work";
 
-export const useWorkData = (challengeId, updateModalState) => {
+export const useWorkData = (challengeId, workId, updateModalState) => {
   const router = useRouter();
 
   // 에디터 핵심 상태
@@ -14,7 +14,6 @@ export const useWorkData = (challengeId, updateModalState) => {
 
   // 작업물 메타 정보
   const [workMeta, setWorkMeta] = useState({
-    workId: null,
     challengeTitle: "",
     originalUrl: ""
   });
@@ -23,12 +22,9 @@ export const useWorkData = (challengeId, updateModalState) => {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        // TODO: 테스트 ID는 실제 매개변수로 교체 필요
-        // const response = await getWorkDetailAction(challengeId, workMeta.workId);
-        const response = await getWorkDetailAction(15, 67);
+        const response = await getWorkDetailAction(challengeId, workId);
         if (response?.data) {
           setWorkMeta({
-            workId: response.data.workId,
             challengeTitle: response.data.challengeTitle,
             originalUrl: response.data.originalUrl
           });
@@ -52,8 +48,9 @@ export const useWorkData = (challengeId, updateModalState) => {
 
       setIsLoading(true);
       const payload = content === "<p></p>" ? "" : content;
-      // await updateWorkAction(workMeta.workId, payload);
-      await updateWorkAction(67, payload);
+
+      console.log(workId, payload);
+      await updateWorkAction(workId, payload);
       updateModalState("isSubmitConfirmOpen", false);
       router.refresh();
     } catch (error) {
@@ -71,8 +68,7 @@ export const useWorkData = (challengeId, updateModalState) => {
       }
 
       setIsLoading(true);
-      // const result = await deleteWorkAction(workMeta.workId);
-      const result = await deleteWorkAction(67);
+      const result = await deleteWorkAction(workId);
       if (result.status === 204) {
         updateModalState("isDeleteConfirmOpen", false);
         router.push(`/challenges/${challengeId}`);

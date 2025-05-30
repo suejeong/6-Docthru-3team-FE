@@ -109,7 +109,7 @@ export default function Header() {
     <div>
       <div className="mt-10 flex justify-between">
         <div className="mb-4 text-xl font-semibold text-gray-800 md:text-2xl">{challenge?.title || "Loading..."}</div>
-        {isAuthor && <Menu onEdit={handleEdit} onDelete={handleDelete} />}
+        {!isAdmin && isAuthor && <Menu onEdit={handleEdit} onDelete={handleDelete} />}
         {isAdmin && <Menu onEdit={handleEdit} onDelete={handleAdminDelete} />}
       </div>
       <div className="flex items-center gap-2">

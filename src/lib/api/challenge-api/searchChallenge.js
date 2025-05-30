@@ -20,33 +20,31 @@ const getAuthHeaders = async () => {
 };
 
 // 챌린지 목록 가져오기
-
-export async function getChallenges({ page = 1, pageSize = 4, category, docType, keyword, status, myChallengeStatus }) {
-
+export async function getChallenges({ page = 1, pageSize = 4, category, docType, keyword, status }, myChallengeStatus) {
   const headers = await getAuthHeaders();
-
-  //디버깅
-  console.log("status", status);
 
   const params = new URLSearchParams();
   params.set("page", page);
   params.set("pageSize", pageSize);
 
-  if (category) params.set("category", category);
+  if (category) {
+    //다중 쿼리 파라미터를 보낼 수 있도록
+    if (Array.isArray(category)) {
+      category.forEach((cat) => params.append("category", cat));
+    } else {
+      params.set("category", category);
+    }
+  }
   if (docType) params.set("docType", docType);
   if (keyword) {
     const cleanedKeyword = keyword.replace(/\s+/g, "");
+
+    //디버깅
+    console.log('cleanedKeyword', cleanedKeyword)
+    
     params.set("keyword", cleanedKeyword);
   }
   if (status) params.set("status", status);
-  //   if (status) {
-  //   if (Array.isArray(status)) {
-  //     status.forEach((s) => params.append("status", s));
-  //   } else {
-  //     params.set("status", status);
-  //   }
-  // }
-
 
   const isMyChallenge = typeof myChallengeStatus === "string" && myChallengeStatus.trim() !== "";
 
@@ -55,7 +53,6 @@ export async function getChallenges({ page = 1, pageSize = 4, category, docType,
   if (isMyChallenge) {
     params.set("myChallengeStatus", myChallengeStatus);
   }
-
 
   const url = `${API_URL}${path}?${params.toString()}`;
 
@@ -80,7 +77,7 @@ export async function getChallenges({ page = 1, pageSize = 4, category, docType,
       return { data: [], totalCount: 0 };
     }
 
-    console.log("📦 응답 데이터:", json); 
+    console.log("📦 응답 데이터:", json);
 
     return {
       data: Array.isArray(json?.data) ? json.data : [],
@@ -91,4 +88,3 @@ export async function getChallenges({ page = 1, pageSize = 4, category, docType,
     throw error;
   }
 }
-

@@ -1,9 +1,7 @@
 import { getChallenges } from "@/lib/api/challenge-api/searchChallenge";
 import { useState, useEffect, useCallback } from "react";
-import { useAuth } from "@/providers/AuthProvider";
 
-const useChallenges = () => {
-
+const useChallenges = (myChallengeStatus) => {
   const [filters, setFilters] = useState({
     categories: [],
     docType: "",
@@ -13,7 +11,7 @@ const useChallenges = () => {
   const [keyword, setKeyword] = useState("");
   const [totalCount, setTotalCount] = useState(0);
   const [page, setPage] = useState(1);
-  
+
   const getInitialPageSize = () => {
     if (typeof window !== "undefined") {
       return window.innerWidth > 375 ? 5 : 4;
@@ -34,16 +32,34 @@ const useChallenges = () => {
         page,
         pageSize,
         keyword,
-        category: filters.categories[0] || "",
+        category: filters.categories,
         docType: filters.docType,
         status: filters.status
       };
 
-      const challengesResults = await getChallenges(options) ?? { data: [], totalCount: 0 };
+      //디버깅
+      console.log("keyword", keyword);
+
+      const challengesResults = await getChallenges(options, myChallengeStatus);
       setTotalCount(challengesResults.totalCount);
-      const results = challengesResults.data;
-      
-      setChallenges(results);
+
+      const results = Array.isArray(challengesResults?.data) ? challengesResults.data : [];
+
+      const currentDate = new Date();
+
+      let filteredResults = results;
+      if (filters.status === "progress") {
+        filteredResults = results.filter((result) => {
+          const deadlineDate = new Date(result.deadline);
+          return deadlineDate.getTime() > currentDate.getTime();
+        });
+      } else if (filters.status === "closed") {
+        filteredResults = results.filter((result) => {
+          const deadlineDate = new Date(result.deadline);
+          return deadlineDate.getTime() < currentDate.getTime();
+        });
+      }
+      setChallenges(filteredResults);
     } catch (err) {
       console.error("챌린지 목록 불러오기 실패:", err);
       setError("챌린지 목록을 불러오는 데 실패했습니다.");
@@ -54,15 +70,13 @@ const useChallenges = () => {
   }, [page, pageSize, keyword, filters.categories, filters.docType, filters.status]);
 
   useEffect(() => {
-      getChallengesData();
+    getChallengesData();
   }, [getChallengesData]);
-
 
   useEffect(() => {
     setPage(1);
   }, [filters, keyword]);
 
-  
   const applyFilters = useCallback(({ fields, docType, status }) => {
     setFilters({
       categories: fields,

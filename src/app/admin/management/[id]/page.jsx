@@ -19,13 +19,17 @@ export default function AdminApplicationPage() {
   const applicationId = params.id;
   const [application, setApplication] = useState(null);
   const [challenge, setChallenge] = useState(null);
+  const [prevId, setPrevId] = useState(null);
+  const [nextId, setNextId] = useState(null);
   const [isModalOpen, setisModalOpen] = useState(false);
 
   const fetchApplication = async () => {
     try {
       const data = await userService.getApplication(applicationId);
-      setApplication(data.application);
-      setChallenge(data.challenge);
+      setApplication(data?.application);
+      setChallenge(data?.challenge);
+      setPrevId(data?.prevApplicationId);
+      setNextId(data?.nextApplicationId);
     } catch (error) {
       console.log("신청한 챌린지 상세 불러오기 실패: ", error);
     }
@@ -66,14 +70,32 @@ export default function AdminApplicationPage() {
     <div className="mt-4 pb-[10rem] md:mt-6">
       <div className="flex justify-between">
         <span className="font-medium text-gray-800">No. {applicationId}</span>
-        <button className="flex gap-[10px]">
-          <Image src={arrorLeft} alt="이전 챌린지" width={24} height={24} />
-          <Image src={arrorRight} alt="다음 챌린지" width={24} height={24} />
-        </button>
+        <div className="flex gap-[10px]">
+          <button
+            onClick={() => {
+              if (prevId !== null) {
+                window.location.href = `/admin/management/${prevId}`;
+              }
+            }}
+            disabled={prevId === null}
+          >
+            <Image src={arrorLeft} alt="이전 챌린지" width={24} height={24} />
+          </button>
+          <button
+            onClick={() => {
+              if (prevId !== null) {
+                window.location.href = `/admin/management/${nextId}`;
+              }
+            }}
+            disabled={nextId === null}
+          >
+            <Image src={arrorRight} alt="다음 챌린지" width={24} height={24} />
+          </button>
+        </div>
       </div>
       <StatusSection application={application} />
       <LineDivider />
-      <ChallengeSection challenge={challenge} />
+      <ChallengeSection challenge={challenge} adminStatus={application?.adminStatus} />
       <LineDivider />
       <OriginalUrlSection originalPageUrl={challenge?.originalUrl} />
       {(application?.adminStatus === "PENDING" || application?.adminStatus === "ACCEPTED") && <LineDivider />}

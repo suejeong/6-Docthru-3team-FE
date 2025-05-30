@@ -1,4 +1,3 @@
-// ChallengeDetailPage.jsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -14,6 +13,9 @@ import userIcon from "@/assets/img/profile_member.svg";
 import arrowRight from "@/assets/icon/ic_arrow_right.svg";
 import arrowLeft from "@/assets/icon/ic_arrow_left.svg";
 import TopRecommendedWork from "@/app/(user)/challenges/_components/TopRecommendedWork";
+import { createWorkAction } from "@/lib/actions/work";
+import { useRouter } from "next/navigation";
+import { assignRankingWithTies } from "@/lib/utils/assignRank";
 
 function useIsTablet() {
   const [isTablet, setIsTablet] = useState(false);
@@ -39,20 +41,21 @@ export default function ChallengeDetailPage() {
   const itemsPerPage = 5;
   const totalPages = Math.ceil(rankingData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentItems = rankingData.slice(startIndex, startIndex + itemsPerPage);
+  const sortedData = [...rankingData].sort((a, b) => b.likeCount - a.likeCount);
+  const rankedData = assignRankingWithTies(sortedData);
+  const currentItems = rankedData.slice(startIndex, startIndex + itemsPerPage);
 
-  const handleToggleLike = (workId) => {
-    setRankingData((prev) =>
-      prev.map((item) =>
-        item.workId === workId
-          ? {
-              ...item,
-              isLiked: !item.isLiked,
-              likeCount: item.isLiked ? item.likeCount - 1 : item.likeCount + 1
-            }
-          : item
-      )
-    );
+  const router = useRouter();
+
+  const handleChallenge = async () => {
+    try {
+      const data = await createWorkAction(challengeId);
+      const workId = data.data.id;
+      router.push(`/challenges/${challenge.id}/work/${workId}/form`);
+    } catch (err) {
+      console.error("작업 생성 실패:", err);
+      alert("작업 생성에 실패했습니다.");
+    }
   };
 
   useEffect(() => {
@@ -79,13 +82,23 @@ export default function ChallengeDetailPage() {
   if (error) return <main className="p-10 text-center text-red-500">{error}</main>;
   if (!challenge) return <main className="p-10 text-center">챌린지를 찾을 수 없습니다.</main>;
 
-  const isDeadlinePassed = dayjs().isAfter(dayjs(challenge.deadline));
-  const isRecruitmentFull = !isDeadlinePassed && (challenge.participants?.length || 0) >= challenge.maxParticipant;
+  const now = dayjs();
+  const deadline = dayjs(challenge.deadline);
+  const participantCount = challenge.participants?.length || 0;
+
+  let challengeStatus = undefined;
+  if (now.isAfter(deadline)) {
+    challengeStatus = "expired";
+  } else if (participantCount >= challenge.maxParticipant) {
+    challengeStatus = "closed";
+  }
+
   return (
-    <main className="flex flex-col items-center bg-white">
+    <main className="mb-40 flex flex-col items-center bg-white">
       <section className="flex w-full max-w-6xl flex-col gap-4 md:flex-row md:items-start md:justify-center md:gap-6">
         <div className="flex w-full flex-col gap-2 md:w-2/3">
-          <ChallengeCard {...challenge} variant="simple" status={isRecruitmentFull ? "모집완료" : undefined} />
+          {/* 🔥 status props 전달 */}
+          <ChallengeCard {...challenge} variant="simple" status={challengeStatus} />
 
           <section className="px-1 text-gray-800 sm:px-2 md:px-4">
             <p className="text-sm leading-[1.3] whitespace-pre-line md:text-base">{challenge.description}</p>
@@ -105,12 +118,14 @@ export default function ChallengeDetailPage() {
             currentCount={challenge.participants?.length || 0}
             maxCount={challenge.maxParticipant}
             originalUrl={challenge.originalUrl}
+            onChallenge={handleChallenge}
+            status={challengeStatus}
           />
         </div>
       </section>
 
       <div className="mt-6" />
-      {isDeadlinePassed && <TopRecommendedWork rankingData={rankingData} onToggleLike={handleToggleLike} />}
+      {challengeStatus === "expired" && <TopRecommendedWork rankingData={rankingData} />}
 
       <section className="mt-6 w-full max-w-6xl rounded-xl border-2 border-gray-800 bg-white">
         <div className="flex items-center justify-between px-4 py-3">
@@ -146,20 +161,31 @@ export default function ChallengeDetailPage() {
 
         <div className="px-4">
           {currentItems.length > 0 ? (
-            currentItems.map((item, index) => (
-              <RankingListItem
-                key={item.workId}
-                item={{
-                  rank: startIndex + index + 1,
-                  userName: item.author.authorNickname,
-                  userRole: "전문가",
-                  likes: item.likeCount,
-                  isLiked: item.isLiked,
-                  workId: item.workId
-                }}
-                toggleLike={() => handleToggleLike(item.workId)}
-              />
-            ))
+            (() => {
+              const seenRanks = new Set();
+
+              return currentItems.map((item) => {
+                const isFirstOfRank = !seenRanks.has(item.rank);
+                seenRanks.add(item.rank);
+
+                return (
+                  <RankingListItem
+                    key={item.workId}
+                    item={{
+                      rank: item.rank,
+                      userName: item.author.authorNickname,
+                      userRole:
+                        item.author.grade === "EXPERT" ? "전문가" : item.author.grade === "NORMAL" ? "일반" : "미정",
+                      likes: item.likeCount,
+                      isLiked: true,
+                      workId: item.workId,
+                      challengeId: challenge.id
+                    }}
+                    highlight={isFirstOfRank}
+                  />
+                );
+              });
+            })()
           ) : (
             <p className="min-h-30 py-4 text-center text-gray-500">
               아직 참여한 도전자가 없어요,

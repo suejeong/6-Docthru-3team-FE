@@ -28,14 +28,14 @@ export async function getUserAction() {
   }
 }
 
-// 챌린지 신청 목록 조회
-export async function getApplicationsAction({ params = {} }) {
+// 나의 챌린지 신청 목록 조회
+export async function getMyApplicationsAction({ params = {} }) {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get("accessToken")?.value;
   const query = new URLSearchParams(params).toString();
 
   try {
-    const res = await fetch(`${BASE_URL}/users/me/challenges?myChallengeStatus=applied&${query}`, {
+    const res = await fetch(`${BASE_URL}/users/me/applications?${query}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -49,7 +49,7 @@ export async function getApplicationsAction({ params = {} }) {
 
     return await res.json();
   } catch (err) {
-    console.error("getApplicationsAction 에러:", err);
+    console.error("getMyApplicationsAction 에러:", err);
     throw err;
   }
 }
