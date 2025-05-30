@@ -2,21 +2,21 @@
 
 import Container from "@/components/container/PageContainer";
 import Gnb from "@/layout/Gnb";
-import titleDoct from "@/assets/img/img_title_doct.svg"
+import titleDoct from "@/assets/img/img_title_doct.avif"
 import Image from "next/image";
 import Link from "next/link";
 import iconChallenge from "@/assets/icon/ic_landing_challenge.svg";
 import iconHeart from "@/assets/icon/ic_landing_heart.svg";
 import iconFeedback from "@/assets/icon/ic_landing_feedback.svg";
-import bgSm from "@/assets/img/bg_sm.svg"
-import bgMd from "@/assets/img/bg_md.svg"
-import bgLg from "@/assets/img/bg_lg.svg"
-import imgChallenge from "@/assets/img/img_challengelist.svg"
-import imgWork from "@/assets/img/img_work.svg"
-import imgFeedback from "@/assets/img/img_feedback.svg"
-import imgChallengeSm from "@/assets/img/img_challengelist_sm.svg"
-import imgWorkSm from "@/assets/img/img_work_sm.svg"
-import imgFeedbackSm from "@/assets/img/img_feedback_sm.svg"
+import bgSm from "@/assets/img/bg_sm.avif"
+import bgMd from "@/assets/img/bg_md.avif"
+import bgLg from "@/assets/img/bg_lg.avif"
+import imgChallenge from "@/assets/img/img_challengelist.avif"
+import imgWork from "@/assets/img/img_work.avif"
+import imgFeedback from "@/assets/img/img_feedback.avif"
+import imgChallengeSm from "@/assets/img/img_challengelist_sm.avif"
+import imgWorkSm from "@/assets/img/img_work_sm.avif"
+import imgFeedbackSm from "@/assets/img/img_feedback_sm.avif"
 import { useEffect, useState } from "react";
 
 
