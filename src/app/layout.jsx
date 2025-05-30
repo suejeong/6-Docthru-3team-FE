@@ -71,11 +71,11 @@ export default async function RootLayout({ children }) {
         <meta property="og:type" content="website" />
         <meta property="og:title" content="Docthur - 개발 문서 번역 플랫폼" />
         <meta property="og:description" content="전 세계 개발 문서를 한국어로 쉽게 이해하세요." />
-        <meta property="og:image" content="/og-image.png" />
+        <meta property="og:image" content="/og-image.webp" />
         <meta name="twitter:card" content="summary" />
         <meta name="twitter:title" content="Docthur - 개발 문서 번역 플랫폼" />
         <meta name="twitter:description" content="전 세계 개발 문서를 한국어로 쉽게 이해하세요." />
-        <meta name="twitter:image" content="/og-image.png" />
+        <meta name="twitter:image" content="/og-image.webp" />
         <link rel="icon" href="/favicon.svg" />
         <link rel="canonical" href="https://6-docthru-3team-fe-dev.vercel.app/" />
       </head>
