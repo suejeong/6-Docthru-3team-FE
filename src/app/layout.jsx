@@ -28,7 +28,7 @@ export const metadata = {
   title: "Docthur - 독스루",
   description: "개발문서 번역 플랫폼",
   keywords: ["번역", "개발 문서", "Docthur", "Docs", "번역 플랫폼", "개발 원서 번역", "개발 번역"],
-  authors: [{ name: "Docthur", url: "https://6-docthru-3team-fe-dev.vercel.app/" }],
+  authors: [{ name: "Docthur", url: ["https://6-docthru-3team-fe-dev.vercel.app/", "https://6-docthru-3team-fe-dun.vercel.app/"] }],
   creator: "Docthur",
   icons: {
     icon: "/favicon.svg",
@@ -36,7 +36,7 @@ export const metadata = {
   openGraph: {
     title: "Docthur - 개발문서 번역 플랫폼",
     description: "전 세계 개발 문서를 한국어로 쉽게 이해하세요.",
-    url: "https://6-docthru-3team-fe-dev.vercel.app/",
+    url: ["https://6-docthru-3team-fe-dev.vercel.app/", "https://6-docthru-3team-fe-dun.vercel.app/"],
     siteName: "Docthur",
     images: [
       {
