@@ -40,9 +40,9 @@ export const metadata = {
     siteName: "Docthur",
     images: [
       {
-        url: "/og-image.webp",
-        width: 736,
-        height: 368,
+        url: "https://6-docthru-3team-fe-dun.vercel.app/og-image.webp",
+        width: 1488,
+        height: 556,
         alt: "Docthur 서비스 소개 이미지"
       }
     ],
@@ -53,7 +53,7 @@ export const metadata = {
     card: "summary_large_image",
     title: "Docthur - 개발문서 번역 플랫폼",
     description: "전 세계 개발 문서를 한국어로 쉽게 이해하세요.",
-    images: ["/og-image.webp"]
+    images: ["https://6-docthru-3team-fe-dun.vercel.app/og-image.webp"]
   },
   metadataBase: new URL("https://6-docthru-3team-fe-dev.vercel.app/")
 };
@@ -71,11 +71,11 @@ export default async function RootLayout({ children }) {
         <meta property="og:type" content="website" />
         <meta property="og:title" content="Docthur - 개발 문서 번역 플랫폼" />
         <meta property="og:description" content="전 세계 개발 문서를 한국어로 쉽게 이해하세요." />
-        <meta property="og:image" content="/og-image.webp" />
+        <meta property="og:image" content="https://6-docthru-3team-fe-dun.vercel.app/og-image.webp" />
         <meta name="twitter:card" content="summary" />
         <meta name="twitter:title" content="Docthur - 개발 문서 번역 플랫폼" />
         <meta name="twitter:description" content="전 세계 개발 문서를 한국어로 쉽게 이해하세요." />
-        <meta name="twitter:image" content="/og-image.webp" />
+        <meta name="twitter:image" content="https://6-docthru-3team-fe-dun.vercel.app/og-image.webp" />
         <link rel="icon" href="/favicon.svg" />
         <link rel="canonical" href="https://6-docthru-3team-fe-dev.vercel.app/" />
       </head>
