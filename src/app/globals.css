@@ -26,16 +26,39 @@
 
   /* ✅ Typography */
   --font-pretendard:
-    "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
-    system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo",
-    "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji",
+    "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue",
+    "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji",
     "Segoe UI Symbol", sans-serif;
+
+  --font-quantico-regular: Quantico, sans-serif;
+  --font-quantico-bold: Quantico, sans-serif;
 
   /* ✅ Tailwind Breakpoint 대응 Container Size */
 
-  --container-sm: 450px; /* 모바일 */
-  --container-md: 768px; /* 태블릿 (iPad Mini) */
-  --container-xl: 1280px; /* 데스크탑 */
+  /* max-w-[var(--container-xl)] 해당 형태로 사용하시면 됩니다 */
+  /* min-w-[var(--container-xl)] 해당 형태로 사용하시면 됩니다 */
+
+  /* 모바일 */
+  --container-sm: 375px;
+
+  /* 태블릿 (iPad Mini) */
+  --container-md: 744px;
+
+  /* 챌린지조회 외 페이지 기준 크기 */
+  --container-challenge-other: 890px;
+
+  /* 챌린지 조회 페이지 기준 크기 */
+  --container-challenge: 996px;
+
+  /* 데스크탑 */
+  --container-xl: 1200px;
+}
+
+@layer components {
+  /* 버튼 컴포넌트 */
+  .page-btn {
+    @apply flex h-8 w-8 items-center justify-center rounded-lg text-sm font-medium text-gray-400 hover:bg-gray-200 md:h-10 md:w-10;
+  }
 }
 
 /* ===========================
@@ -48,7 +71,42 @@
 
   body {
     font-family: var(--font-pretendard);
-    background-color: var(--color-brand-white); /* 예시 */
+    background-color: var(--color-gray-50);
     color: var(--color-gray-900);
+  }
+
+  input:focus,
+  textarea:focus {
+    outline: 1px solid var(--color-gray-900);
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+
+  .font-quantico-regular {
+    font-family: var(--font-quantico-regular);
+    font-weight: 400;
+  }
+
+  .font-quantico-bold {
+    font-family: var(--font-quantico-bold);
+    font-weight: 700;
+  }
+
+  /* styles/globals.css */
+  /* editor 순서, 비순서 정렬 css 서식 */
+  .ProseMirror ul {
+    list-style-type: disc;
+    padding-left: 1.25rem;
+  }
+
+  .ProseMirror ol {
+    list-style-type: decimal;
+    padding-left: 1.25rem;
   }
 }
